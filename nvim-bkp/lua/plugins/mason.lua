@@ -52,7 +52,7 @@ return {
                 end,
             }
         })
-        require("lspconfig").emmet_ls.setup { }
+        require("lspconfig").angularls.setup { }
 
         local cmp_select = { behavior = cmp.SelectBehavior.Select }
 

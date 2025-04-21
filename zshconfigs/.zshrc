@@ -6,6 +6,7 @@ eval "$(starship init zsh)"
 
 path+=('/home/shalv/.local/bin')
 source /home/shalv/.dotfiles/zshconfigs/completion.zsh
+source /home/shalv/alias
 
 
 # >>> conda initialize >>>
