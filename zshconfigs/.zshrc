@@ -24,3 +24,10 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+HISTFILE="~/.zsh_history"
+HISTSIZE=10000000
+SAVEHIST=10000000
+
+setopt hist_ignore_all_dups
+setopt hist_ignore_space
+
