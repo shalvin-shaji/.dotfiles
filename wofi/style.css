@@ -1,0 +1,76 @@
+
+@define-color rosewater #dc8a78;
+@define-color text #4c4f69;
+@define-color mauve #8839ef;
+@define-color red #d20f39;
+@define-color subtext #5c5f77;
+@define-color teal #179299;
+@define-color surface0 #ccd0da;
+@define-color surface1 #bcc0cc;
+@define-color surface2 #acb0be;
+@define-color lavender #7287fd;
+
+
+
+window {
+    blur: 3px;
+    border:  0px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 1.4rem;
+}
+
+#input {
+    border-radius: 10px 10px 0 0;
+    border:  0px;
+    padding: 10px;
+    margin: 0px;
+    font-size: 28px;
+    color: @text;
+    background-color: @surface1;
+    placeholder: "";
+}
+
+#inner-box {
+	margin: 0px;
+	background-color: @teal;
+	color: @teal;
+}
+
+#outer-box {
+	margin: 0px;
+	background-color: @surface0;
+    border-radius: 10px;
+}
+
+#selected {
+	width: 100%;
+}
+
+#entry {
+	padding: 5px;
+	margin: 0px;
+	background-color: @surface2;
+	color:@text; 
+}
+
+#scroll {
+	margin: 5px;
+	background-color: @surface2;
+}
+
+#text {
+	margin: 0px;
+	padding: 2px 2px 2px 10px;
+}
+
+#entry:selected {
+	color: @red;
+	background-color: @teal;
+	border: 0px;
+	outline: 0px;
+}
+
+#text:selected {
+	color: @subtext1;
+}
