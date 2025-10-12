@@ -12,4 +12,9 @@ mouse.apply_to_config(config)
 theme.apply_to_config(config)
 tabs.apply_to_config(config)
 
+-- scroll back
+--
+
+config.scrollback_lines = 3500
+
 return config
