@@ -1,0 +1,26 @@
+# fda - including hidden directories
+fd() {
+  local dir
+  dir=$(find ${1:-/home/sh/} -type d 2> /dev/null | fzf +m) && cd "$dir"
+}
+
+fp() {
+
+    local dir
+    dir=$(find ${1:-/home/sh/projects/} -type d -mindepth 1 -maxdepth 1 2> /dev/null | fzf +m) && cd "$dir" && nvim "$dir"
+}
+
+
+# fh - repeat history
+runcmd (){ perl -e 'ioctl STDOUT, 0x5412, $_ for split //, <>' ; }
+
+fh() {
+  ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed -re 's/^\s*[0-9]+\s*//' | runcmd
+}
+
+# fhe - repeat history edit
+writecmd (){ perl -e 'ioctl STDOUT, 0x5412, $_ for split //, do{ chomp($_ = <>); $_ }' ; }
+
+fhe() {
+  ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed -re 's/^\s*[0-9]+\s*//' | writecmd
+}
