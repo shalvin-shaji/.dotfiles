@@ -1,57 +1,70 @@
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import QtQuick.Layouts
+import QtQuick.Layouts // Critical for the "fillWidth" items
 
 Scope {
-	Variants {
-		model: Quickshell.screens;
-		PanelWindow {
+    Variants {
+        model: Quickshell.screens
+        
+        PanelWindow {
+            id: barlayout
+            required property var modelData
+            screen: modelData
 
-			id: barlayout
+            color: "transparent"
+            implicitHeight: 30
 
-			required property var modelData
-			screen: modelData
+            anchors {
+                top: true
+                right: true
+                left: true
+            }
 
-			color: "transparent"
-			implicitHeight: 30
+            // Use RowLayout instead of Row to support the "Spring" spacers
+            RowLayout {
+                anchors.fill: parent
+                spacing: 10
 
-			anchors {
-				top: true
-				right: true
-				left: true
-			}
+                // LEFT SECTION
+                Row {
+                    Layout.alignment: Qt.AlignLeft
+                    leftPadding: 20
+                    spacing: 10
+                    Text {
+                        font.family: Style.font
+                        text: "\uef46"
+                        color: Style.lavender
+                        font.pointSize: 22
+                    }
+                    HyperWork {
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
 
-			Row {
-				anchors.left : parent.left
-				anchors.verticalCenter : parent.verticalCenter
+                // SPACER (The "Spring")
+                Item { Layout.fillWidth: true }
 
-				leftPadding: 20
-				Text {
-					font.family: Style.font
-					text: "\uef46"
-					color: Style.lavender
-					font.pointSize: 22
-				}
-				HyperWork{
-					anchors.verticalCenter : parent.verticalCenter
-				}
-			}
+                // CENTER SECTION
+                ClockWidget { 
+                    Layout.alignment: Qt.AlignCenter 
+                }
 
-			Item { Layout.fillWidth: true }
+                // SPACER (The "Spring")
+                Item { Layout.fillWidth: true }
 
-			ClockWidget { anchors.centerIn: parent }
-
-			Item { Layout.fillWidth: true }
-
-			Row {
-				anchors.right : parent.right
-				anchors.verticalCenter : parent.verticalCenter
-				rightPadding: 20
-				Wifi{}
-				Power{}
-			}
-
-		}
-	}
+                // RIGHT SECTION
+                Row {
+                    Layout.alignment: Qt.AlignRight
+                    rightPadding: 20
+                    spacing: 15 // Space between Wifi, Notification, Power
+                    
+                    Wifi {}
+                    Sound {}
+                    Notification {}
+                    Power {}
+                }
+            }
+        }
+    }
 }

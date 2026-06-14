@@ -708,9 +708,45 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = 'openFilesOnly',
+              },
+            },
+          },
+          before_init = function(_, config)
+            local cwd = vim.fn.getcwd()
+            for _, name in ipairs { '.venv', 'venv', 'env' } do
+              local python = cwd .. '/' .. name .. '/bin/python'
+              if vim.fn.executable(python) == 1 then
+                config.settings.python.pythonPath = python
+                break
+              end
+            end
+          end,
+        },
+        gopls = {
+          settings = {
+            gopls = {
+              analyses = { unusedparams = true },
+              staticcheck = true,
+              gofumpt = true,
+            },
+          },
+        },
+        rust_analyzer = {
+          settings = {
+            ['rust-analyzer'] = {
+              cargo = { allFeatures = true },
+              checkOnSave = { command = 'clippy' },
+              procMacro = { enable = true },
+            },
+          },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -747,11 +783,13 @@ require('lazy').setup({
       -- `mason` had to be setup earlier: to configure its options see the
       -- `dependencies` table for `nvim-lspconfig` above.
       --
-      -- You can add other tools here that you want Mason to install
+      -- Youcan add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'ruff', -- Python linter/formatter
+        'jdtls', -- Java LSP (managed via nvim-jdtls, not servers table)
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -804,11 +842,8 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        python = { 'ruff_format' },
+        -- go, rust, java: formatted by their LSPs (gopls, rust-analyzer, jdtls)
       },
     },
   },
@@ -980,7 +1015,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'java', 'go', 'rust' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1013,6 +1048,81 @@ require('lazy').setup({
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
+
+  {
+    'mfussenegger/nvim-jdtls',
+    ft = 'java',
+    config = function()
+      local function jdtls_setup()
+        local jdtls = require 'jdtls'
+        local jdtls_path = require('mason-registry').get_package('jdtls'):get_install_path()
+        local launcher = vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar')
+        local workspace = vim.fn.expand '~/.local/share/jdtls-workspace/'
+          .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
+        local sdkman = vim.fn.expand '~/.sdkman/candidates/java'
+
+        jdtls.start_or_attach {
+          cmd = {
+            'java',
+            '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+            '-Dosgi.bundles.defaultStartLevel=4',
+            '-Declipse.product=org.eclipse.jdt.ls.core.product',
+            '-Dlog.protocol=true',
+            '-Dlog.level=ALL',
+            '-Xmx2g',
+            '--add-modules=ALL-SYSTEM',
+            '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
+            '--add-opens', 'java.base/sun.nio.fs=ALL-UNNAMED',
+            '-jar', launcher,
+            '-configuration', jdtls_path .. '/config_linux',
+            '-data', workspace,
+          },
+          root_dir = jdtls.setup.find_root { 'gradlew', 'mvnw', '.git', 'pom.xml', 'build.gradle' },
+          settings = {
+            java = {
+              eclipse = { downloadSources = true },
+              configuration = {
+                updateBuildConfiguration = 'interactive',
+                runtimes = {
+                  { name = 'JavaSE-11', path = sdkman .. '/11.0.29-amzn' },
+                  { name = 'JavaSE-17', path = sdkman .. '/17.0.19-amzn' },
+                  { name = 'JavaSE-24', path = sdkman .. '/current', default = true },
+                },
+              },
+              maven = { downloadSources = true },
+              implementationsCodeLens = { enabled = true },
+              referencesCodeLens = { enabled = true },
+              format = { enabled = true },
+              inlayHints = { parameterNames = { enabled = 'all' } },
+              saveActions = { organizeImports = true },
+            },
+            signatureHelp = { enabled = true },
+            completion = {
+              favoriteStaticMembers = {
+                'org.junit.Assert.*',
+                'org.junit.Assume.*',
+                'org.junit.jupiter.api.Assertions.*',
+              },
+              importOrder = { 'java', 'javax', 'com', 'org' },
+            },
+          },
+          capabilities = require('blink.cmp').get_lsp_capabilities(),
+          init_options = { bundles = {} },
+        }
+      end
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'java',
+        callback = jdtls_setup,
+      })
+      if vim.bo.filetype == 'java' then
+        jdtls_setup()
+      end
+    end,
+  },
+
   require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 

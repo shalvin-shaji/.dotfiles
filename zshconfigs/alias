@@ -2,5 +2,6 @@ alias vi='nvim '
 alias con='bluetoothctl devices | fzf --with-nth=3,4 --accept-nth=2 --header "Select a bluetooth device" | xargs bluetoothctl connect'
 
 alias cat='bat '
+alias kubectl='minikube kubectl --'
 
 
