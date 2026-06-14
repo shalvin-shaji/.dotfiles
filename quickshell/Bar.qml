@@ -30,7 +30,7 @@ Scope {
                 Row {
                     Layout.alignment: Qt.AlignLeft
                     leftPadding: 20
-                    spacing: 10
+                    spacing: 5
                     Text {
                         font.family: Style.font
                         text: "\uef46"
@@ -57,7 +57,7 @@ Scope {
                 Row {
                     Layout.alignment: Qt.AlignRight
                     rightPadding: 20
-                    spacing: 15 // Space between Wifi, Notification, Power
+                    spacing: 2 // Space between Wifi, Notification, Power
                     
                     Wifi {}
                     Sound {}
